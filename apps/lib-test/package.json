@@ -1,0 +1,13 @@
+{
+  "name": "lib-test",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "run": "node main.ts"
+  },
+  "license": "MIT",
+  "packageManager": "pnpm@10.25.0",
+  "dependencies": {
+    "@shaderchunk/wgsl": "workspace:"
+  }
+}
