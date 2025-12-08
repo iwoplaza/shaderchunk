@@ -16,6 +16,7 @@ export type Context = {
 };
 
 const simpleChunks = {
+  'wgsl:f32': 'f32',
   'wgsl:vec2f': 'vec2f',
   'wgsl:vec3f': 'vec3f',
   'wgsl:vec4f': 'vec4f',
@@ -46,9 +47,27 @@ function linkChunk(ctx: Context, chunk: ChunkBase): string {
   }
 
   if (chunk.kind === 'wgsl:fn') {
+    const fnChunk = chunk as import('./types.js').Fn;
     const name = createName(ctx, chunk);
 
-    const def = `fn ${name} () {}\n\n`;
+    // Generate parameter list
+    const params = fnChunk.args.map(arg => {
+      const paramType = linkChunk(ctx, arg.type);
+      return `${arg.name}: ${paramType}`;
+    }).join(', ');
+
+    // Generate return type
+    const returnType = linkChunk(ctx, fnChunk.returnType);
+
+    // Generate function body
+    const body = fnChunk.body.map(part => {
+      if (typeof part === 'string') {
+        return part;
+      }
+      return linkChunk(ctx, part);
+    }).join(' ');
+
+    const def = `fn ${name}(${params}) -> ${returnType} { ${body} }\n\n`;
     ctx.definitions += def;
 
     ctx.linked.set(chunk, name);

@@ -1,3 +1,7 @@
+export type F32 = {
+  kind: 'wgsl:f32',
+};
+
 export type Vec3f = {
   kind: 'wgsl:vec3f',
 };
