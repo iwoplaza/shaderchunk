@@ -39,6 +39,11 @@ export type Vec2b = {
   kind: 'wgsl:vec2b',
 };
 
+export type Vec2<T extends F32 | I32 | U32 | F16 | Bool = F32 | I32 | U32 | F16 | Bool> = {
+  kind: 'wgsl:vec2',
+  elementType: T;
+};
+
 export type Vec3f = {
   kind: 'wgsl:vec3f',
 };
@@ -59,6 +64,11 @@ export type Vec3b = {
   kind: 'wgsl:vec3b',
 };
 
+export type Vec3<T extends F32 | I32 | U32 | F16 | Bool = F32 | I32 | U32 | F16 | Bool> = {
+  kind: 'wgsl:vec3',
+  elementType: T;
+};
+
 export type Vec4f = {
   kind: 'wgsl:vec4f',
 };
@@ -75,11 +85,22 @@ export type Vec4h = {
   kind: 'wgsl:vec4h',
 };
 
-export type Vec4b = {
-  kind: 'wgsl:vec4b',
+export type Vec4<T extends F32 | I32 | U32 | F16 | Bool = F32 | I32 | U32 | F16 | Bool> = {
+  kind: 'wgsl:vec4',
+  elementType: T;
 };
 
-export type Struct<T extends Record<string, ChunkBase>> = {
+export type Attribute = {
+  name: string,
+  params: ((ChunkBase | string)[])[],
+}
+
+export type StructProperty<TType extends ChunkBase = ChunkBase, TAttribs extends Attribute[] = Attribute[]> = {
+  type: TType,
+  attribs: TAttribs,
+};
+
+export type Struct<T extends Record<string, StructProperty> = Record<string, StructProperty>> = {
   kind: 'wgsl:struct',
   nameHint: string,
   props: T,

@@ -30,7 +30,7 @@ describe('link', () => {
   });
 
   it('should handle all WGSL primitive and vector types', () => {
-    const complexFunction: Fn = {
+    const complexFunction = {
       kind: 'wgsl:fn',
       nameHint: 'processData',
       args: [
@@ -52,11 +52,11 @@ describe('link', () => {
         { name: 'v4i', type: { kind: 'wgsl:vec4i' } },
         { name: 'v4u', type: { kind: 'wgsl:vec4u' } },
         { name: 'v4h', type: { kind: 'wgsl:vec4h' } },
-        { name: 'v4b', type: { kind: 'wgsl:vec4b' } }
+        { name: 'v4b', type: { kind: 'wgsl:vec4', elementType: { kind: 'wgsl:bool' } } },
       ],
       returnType: { kind: 'wgsl:vec4f' },
       body: ['return v4f;']
-    };
+    } as const;
 
     const result = link({ chunks: [complexFunction] });
 
@@ -77,10 +77,10 @@ describe('link', () => {
       kind: 'wgsl:struct' as const,
       nameHint: 'VertexData',
       props: {
-        position: { kind: 'wgsl:vec3f' },
-        color: { kind: 'wgsl:vec4f' },
-        id: { kind: 'wgsl:u32' },
-        active: { kind: 'wgsl:bool' }
+        position: { type: { kind: 'wgsl:vec3f' } },
+        color: { type: { kind: 'wgsl:vec4f' } },
+        id: { type: { kind: 'wgsl:u32' } },
+        active: { type: { kind: 'wgsl:bool' } },
       }
     };
 
@@ -120,14 +120,14 @@ describe('link', () => {
 
   it('should handle structs and arrays in function parameters', () => {
     const vertexStruct = {
-      kind: 'wgsl:struct' as const,
+      kind: 'wgsl:struct',
       nameHint: 'Vertex',
       props: {
-        position: { kind: 'wgsl:vec3f' },
-        normal: { kind: 'wgsl:vec3f' },
-        uv: { kind: 'wgsl:vec2f' }
-      }
-    };
+        position: { type: { kind: 'wgsl:vec3f' } },
+        normal: { type: { kind: 'wgsl:vec3f' } },
+        uv: { type: { kind: 'wgsl:vec2f' } },
+     }
+    } as const;
 
     const vertexArray = {
       kind: 'wgsl:array' as const,

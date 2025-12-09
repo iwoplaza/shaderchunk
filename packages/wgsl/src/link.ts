@@ -1,4 +1,4 @@
-import type { ChunkBase, WithNameHint, Fn, Struct, Array } from './types.ts';
+import type { ChunkBase, WithNameHint, Fn, Struct, Array, Vec2, Vec3, Vec4 } from './types.ts';
 
 export type LinkOptions = {
   chunks: (ChunkBase | string)[],
@@ -38,7 +38,6 @@ const simpleChunks = {
   'wgsl:vec4i': 'vec4i',
   'wgsl:vec4u': 'vec4u',
   'wgsl:vec4h': 'vec4h',
-  'wgsl:vec4b': 'vec4<bool>',
 };
 
 function createName(ctx: Context, chunk: ChunkBase): string {
@@ -63,6 +62,21 @@ function linkChunk(ctx: Context, chunk: ChunkBase): string {
 
   if (chunk.kind in simpleChunks) {
     return simpleChunks[chunk.kind];
+  }
+
+  if (chunk.kind === 'wgsl:vec2') {
+    const vecChunk = chunk as Vec2;
+    return `vec2<${linkChunk(ctx, vecChunk.elementType)}>`;
+  }
+
+  if (chunk.kind === 'wgsl:vec3') {
+    const vecChunk = chunk as Vec3;
+    return `vec3<${linkChunk(ctx, vecChunk.elementType)}>`;
+  }
+
+  if (chunk.kind === 'wgsl:vec4') {
+    const vecChunk = chunk as Vec4;
+    return `vec4<${linkChunk(ctx, vecChunk.elementType)}>`;
   }
 
   if (chunk.kind === 'wgsl:fn') {
@@ -94,7 +108,7 @@ function linkChunk(ctx: Context, chunk: ChunkBase): string {
   }
 
   if (chunk.kind === 'wgsl:struct') {
-    const structChunk = chunk as Struct<Record<string, ChunkBase>>;
+    const structChunk = chunk as Struct;
     
     // Check if this struct has already been defined
     if (ctx.linked.has(chunk)) {
@@ -106,7 +120,7 @@ function linkChunk(ctx: Context, chunk: ChunkBase): string {
     
     // Generate the struct definition
     const structDef = `struct ${structName} {\n${Object.entries(structChunk.props)
-      .map(([key, type]) => `  ${key}: ${linkChunk(ctx, type)};`)
+      .map(([key, prop]) => `  ${key}: ${linkChunk(ctx, prop.type)};`)
       .join('\n')}\n};\n\n`;
     
     // Add the definition to the context
