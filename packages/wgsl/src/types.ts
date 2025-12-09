@@ -79,6 +79,18 @@ export type Vec4b = {
   kind: 'wgsl:vec4b',
 };
 
+export type Struct<T extends Record<string, ChunkBase>> = {
+  kind: 'wgsl:struct',
+  nameHint: string,
+  props: T,
+};
+
+export type Array<TElem extends ChunkBase, TCount extends number> = {
+  kind: 'wgsl:array',
+  elementType: TElem,
+  count: TCount,
+};
+
 export type ChunkBase = {
   kind: `wgsl:${string}`,
 };

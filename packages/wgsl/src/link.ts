@@ -1,4 +1,4 @@
-import type { ChunkBase, WithNameHint, Fn } from './types.ts';
+import type { ChunkBase, WithNameHint, Fn, Struct, Array } from './types.ts';
 
 export type LinkOptions = {
   chunks: (ChunkBase | string)[],
@@ -91,6 +91,37 @@ function linkChunk(ctx: Context, chunk: ChunkBase): string {
 
     ctx.linked.set(chunk, name);
     return name;
+  }
+
+  if (chunk.kind === 'wgsl:struct') {
+    const structChunk = chunk as Struct<Record<string, ChunkBase>>;
+    
+    // Check if this struct has already been defined
+    if (ctx.linked.has(chunk)) {
+      return ctx.linked.get(chunk) as string;
+    }
+    
+    // Create a unique name for the struct using the nameHint
+    const structName = createName(ctx, chunk);
+    
+    // Generate the struct definition
+    const structDef = `struct ${structName} {\n${Object.entries(structChunk.props)
+      .map(([key, type]) => `  ${key}: ${linkChunk(ctx, type)};`)
+      .join('\n')}\n};\n\n`;
+    
+    // Add the definition to the context
+    ctx.definitions += structDef;
+    
+    // Store the reference to avoid redefinition
+    ctx.linked.set(chunk, structName);
+    
+    return structName;
+  }
+
+  if (chunk.kind === 'wgsl:array') {
+    const arrayChunk = chunk as Array<ChunkBase, number>;
+    const elementType = linkChunk(ctx, arrayChunk.elementType);
+    return `array<${elementType}, ${arrayChunk.count}>`;
   }
 
   throw new Error(`Unknown kind of shader chunk: ${chunk.kind}`);

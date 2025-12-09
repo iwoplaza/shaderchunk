@@ -71,4 +71,98 @@ describe('link', () => {
       }
     `);
   });
+
+  it('should generate correct WGSL struct types', () => {
+    const structType = {
+      kind: 'wgsl:struct' as const,
+      nameHint: 'VertexData',
+      props: {
+        position: { kind: 'wgsl:vec3f' },
+        color: { kind: 'wgsl:vec4f' },
+        id: { kind: 'wgsl:u32' },
+        active: { kind: 'wgsl:bool' }
+      }
+    };
+
+    const result = link({ chunks: [structType] });
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "definitions": "struct VertexData {
+        position: vec3f;
+        color: vec4f;
+        id: u32;
+        active: bool;
+      };
+
+      ",
+        "expression": "VertexData",
+      }
+    `);
+  });
+
+  it('should generate correct WGSL array types', () => {
+    const arrayType = {
+      kind: 'wgsl:array' as const,
+      elementType: { kind: 'wgsl:f32' },
+      count: 10
+    };
+
+    const result = link({ chunks: [arrayType] });
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "definitions": "",
+        "expression": "array<f32, 10>",
+      }
+    `);
+  });
+
+  it('should handle structs and arrays in function parameters', () => {
+    const vertexStruct = {
+      kind: 'wgsl:struct' as const,
+      nameHint: 'Vertex',
+      props: {
+        position: { kind: 'wgsl:vec3f' },
+        normal: { kind: 'wgsl:vec3f' },
+        uv: { kind: 'wgsl:vec2f' }
+      }
+    };
+
+    const vertexArray = {
+      kind: 'wgsl:array' as const,
+      elementType: vertexStruct,
+      count: 100
+    };
+
+    const processVerticesFunction: Fn = {
+      kind: 'wgsl:fn',
+      nameHint: 'processVertices',
+      args: [
+        { name: 'vertices', type: vertexArray },
+        { name: 'index', type: { kind: 'wgsl:u32' } }
+      ],
+      returnType: vertexStruct,
+      body: ['return vertices[index];']
+    };
+
+    const result = link({ chunks: [processVerticesFunction] });
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "definitions": "struct Vertex {
+        position: vec3f;
+        normal: vec3f;
+        uv: vec2f;
+      };
+
+      fn processVertices(vertices: array<Vertex, 100>, index: u32) -> Vertex {
+      return vertices[index];
+      }
+
+      ",
+        "expression": "processVertices",
+      }
+    `);
+  });
 });
