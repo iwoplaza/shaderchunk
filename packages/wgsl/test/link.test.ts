@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { link, generateAttribute } from '../src/link.js';
-import type { Fn, Attribute } from '../src/types.js';
+import { link, generateAttribute } from '../src/link.ts';
+import type { Fn, Attribute } from '../src/types.ts';
 
 describe('link', () => {
   it('should generate correct WGSL function definition for adding two f32 values', () => {
@@ -9,23 +9,23 @@ describe('link', () => {
       nameHint: 'addF32',
       args: [
         { name: 'a', type: { kind: 'wgsl:f32' } },
-        { name: 'b', type: { kind: 'wgsl:f32' } }
+        { name: 'b', type: { kind: 'wgsl:f32' } },
       ],
       returnType: { kind: 'wgsl:f32' },
-      body: ['return a + b;']
+      body: ['return a + b;'],
     };
 
-    const result = link({ chunks: [addF32Function, '(1, ', addF32Function, '(2, 3))'] });
+    const result = link({
+      chunks: [addF32Function, '(1, ', addF32Function, '(2, 3))'],
+    });
 
-    expect(result).toMatchInlineSnapshot(`
-      {
-        "definitions": "fn addF32(a: f32, b: f32) -> f32 {
+    expect(result.expression).toMatchInlineSnapshot(`"addF32(1, addF32(2, 3))"`);
+    expect(result.definitions).toMatchInlineSnapshot(`
+      "fn addF32(a: f32, b: f32) -> f32 {
       return a + b;
       }
 
-      ",
-        "expression": "addF32(1, addF32(2, 3))",
-      }
+      "
     `);
   });
 
@@ -52,23 +52,24 @@ describe('link', () => {
         { name: 'v4i', type: { kind: 'wgsl:vec4i' } },
         { name: 'v4u', type: { kind: 'wgsl:vec4u' } },
         { name: 'v4h', type: { kind: 'wgsl:vec4h' } },
-        { name: 'v4b', type: { kind: 'wgsl:vec4', elementType: { kind: 'wgsl:bool' } } },
+        {
+          name: 'v4b',
+          type: { kind: 'wgsl:vec4', elementType: { kind: 'wgsl:bool' } },
+        },
       ],
       returnType: { kind: 'wgsl:vec4f' },
-      body: ['return v4f;']
+      body: ['return v4f;'],
     } as const;
 
     const result = link({ chunks: [complexFunction] });
 
-    expect(result).toMatchInlineSnapshot(`
-      {
-        "definitions": "fn processData(b: bool, f16: f16, i: i32, u: u32, v2f: vec2f, v2i: vec2i, v2u: vec2u, v2h: vec2h, v2b: vec2<bool>, v3f: vec3f, v3i: vec3i, v3u: vec3u, v3h: vec3h, v3b: vec3<bool>, v4f: vec4f, v4i: vec4i, v4u: vec4u, v4h: vec4h, v4b: vec4<bool>) -> vec4f {
+    expect(result.expression).toMatchInlineSnapshot(`"processData"`);
+    expect(result.definitions).toMatchInlineSnapshot(`
+      "fn processData(b: bool, f16: f16, i: i32, u: u32, v2f: vec2f, v2i: vec2i, v2u: vec2u, v2h: vec2h, v2b: vec2<bool>, v3f: vec3f, v3i: vec3i, v3u: vec3u, v3h: vec3h, v3b: vec3<bool>, v4f: vec4f, v4i: vec4i, v4u: vec4u, v4h: vec4h, v4b: vec4<bool>) -> vec4f {
       return v4f;
       }
 
-      ",
-        "expression": "processData",
-      }
+      "
     `);
   });
 
@@ -81,23 +82,21 @@ describe('link', () => {
         color: { type: { kind: 'wgsl:vec4f' } },
         id: { type: { kind: 'wgsl:u32' } },
         active: { type: { kind: 'wgsl:bool' } },
-      }
+      },
     };
 
     const result = link({ chunks: [structType] });
 
-    expect(result).toMatchInlineSnapshot(`
-      {
-        "definitions": "struct VertexData {
+    expect(result.expression).toMatchInlineSnapshot(`"VertexData"`);
+    expect(result.definitions).toMatchInlineSnapshot(`
+      "struct VertexData {
         position: vec3f;
         color: vec4f;
         id: u32;
         active: bool;
       };
 
-      ",
-        "expression": "VertexData",
-      }
+      "
     `);
   });
 
@@ -105,17 +104,12 @@ describe('link', () => {
     const arrayType = {
       kind: 'wgsl:array' as const,
       elementType: { kind: 'wgsl:f32' },
-      count: 10
+      count: 10,
     };
 
     const result = link({ chunks: [arrayType] });
 
-    expect(result).toMatchInlineSnapshot(`
-      {
-        "definitions": "",
-        "expression": "array<f32, 10>",
-      }
-    `);
+    expect(result.expression).toMatchInlineSnapshot(`"array<f32, 10>"`);
   });
 
   it('should handle structs and arrays in function parameters', () => {
@@ -126,13 +120,13 @@ describe('link', () => {
         position: { type: { kind: 'wgsl:vec3f' } },
         normal: { type: { kind: 'wgsl:vec3f' } },
         uv: { type: { kind: 'wgsl:vec2f' } },
-     }
+      },
     } as const;
 
     const vertexArray = {
       kind: 'wgsl:array' as const,
       elementType: vertexStruct,
-      count: 100
+      count: 100,
     };
 
     const processVerticesFunction: Fn = {
@@ -140,17 +134,17 @@ describe('link', () => {
       nameHint: 'processVertices',
       args: [
         { name: 'vertices', type: vertexArray },
-        { name: 'index', type: { kind: 'wgsl:u32' } }
+        { name: 'index', type: { kind: 'wgsl:u32' } },
       ],
       returnType: vertexStruct,
-      body: ['return vertices[index];']
+      body: ['return vertices[index];'],
     };
 
     const result = link({ chunks: [processVerticesFunction] });
 
-    expect(result).toMatchInlineSnapshot(`
-      {
-        "definitions": "struct Vertex {
+    expect(result.expression).toMatchInlineSnapshot(`"processVertices"`);
+    expect(result.definitions).toMatchInlineSnapshot(`
+      "struct Vertex {
         position: vec3f;
         normal: vec3f;
         uv: vec2f;
@@ -160,9 +154,7 @@ describe('link', () => {
       return vertices[index];
       }
 
-      ",
-        "expression": "processVertices",
-      }
+      "
     `);
   });
 
@@ -173,12 +165,12 @@ describe('link', () => {
         linked: new WeakMap(),
         definitions: '',
       };
-      
+
       const attribute: Attribute = {
         name: 'builtin',
-        params: []
+        params: [],
       };
-      
+
       const result = generateAttribute(ctx, attribute);
       expect(result).toBe('@builtin');
     });
@@ -189,12 +181,12 @@ describe('link', () => {
         linked: new WeakMap(),
         definitions: '',
       };
-      
+
       const attribute: Attribute = {
         name: 'size',
-        params: [['16']]
+        params: [['16']],
       };
-      
+
       const result = generateAttribute(ctx, attribute);
       expect(result).toBe('@size(16)');
     });
@@ -205,12 +197,12 @@ describe('link', () => {
         linked: new WeakMap(),
         definitions: '',
       };
-      
+
       const attribute: Attribute = {
         name: 'workgroup_size',
-        params: [['16', '16', '1']]
+        params: [['16', '16', '1']],
       };
-      
+
       const result = generateAttribute(ctx, attribute);
       expect(result).toBe('@workgroup_size(16, 16, 1)');
     });
@@ -221,12 +213,12 @@ describe('link', () => {
         linked: new WeakMap(),
         definitions: '',
       };
-      
+
       const attribute: Attribute = {
         name: 'builtin',
-        params: [['position']]
+        params: [['position']],
       };
-      
+
       const result = generateAttribute(ctx, attribute);
       expect(result).toBe('@builtin(position)');
     });
@@ -237,12 +229,12 @@ describe('link', () => {
         linked: new WeakMap(),
         definitions: '',
       };
-      
+
       const attribute: Attribute = {
         name: 'complex',
-        params: [['param1'], ['param2', 'param3']]
+        params: [['param1'], ['param2', 'param3']],
       };
-      
+
       const result = generateAttribute(ctx, attribute);
       expect(result).toBe('@complex(param1, param2, param3)');
     });
@@ -253,12 +245,12 @@ describe('link', () => {
         linked: new WeakMap(),
         definitions: '',
       };
-      
+
       const attribute: Attribute = {
         name: 'custom_type',
-        params: [[{ kind: 'wgsl:f32' }]]
+        params: [[{ kind: 'wgsl:f32' }]],
       };
-      
+
       const result = generateAttribute(ctx, attribute);
       expect(result).toBe('@custom_type(f32)');
     });
@@ -269,46 +261,40 @@ describe('link', () => {
       kind: 'wgsl:struct' as const,
       nameHint: 'VertexInput',
       props: {
-        position: { 
+        position: {
           type: { kind: 'wgsl:vec3f' },
           attribs: [
             { name: 'builtin', params: [['position']] },
-            { name: 'invariant', params: [] }
-          ]
+            { name: 'invariant', params: [] },
+          ],
         },
-        normal: { 
+        normal: {
           type: { kind: 'wgsl:vec3f' },
-          attribs: [
-            { name: 'location', params: [['0']] }
-          ]
+          attribs: [{ name: 'location', params: [['0']] }],
         },
-        uv: { 
+        uv: {
           type: { kind: 'wgsl:vec2f' },
-          attribs: [
-            { name: 'location', params: [['1']] }
-          ]
+          attribs: [{ name: 'location', params: [['1']] }],
         },
-        instanceId: { 
+        instanceId: {
           type: { kind: 'wgsl:u32' },
-          attribs: []
-        }
-      }
+          attribs: [],
+        },
+      },
     };
 
     const result = link({ chunks: [structWithAttributes] });
 
-    expect(result).toMatchInlineSnapshot(`
-      {
-        "definitions": "struct VertexInput {
+    expect(result.expression).toMatchInlineSnapshot(`"VertexInput"`);
+    expect(result.definitions).toMatchInlineSnapshot(`
+      "struct VertexInput {
         @builtin(position) @invariant position: vec3f;
         @location(0) normal: vec3f;
         @location(1) uv: vec2f;
         instanceId: u32;
       };
 
-      ",
-        "expression": "VertexInput",
-      }
+      "
     `);
   });
 
@@ -318,27 +304,23 @@ describe('link', () => {
       nameHint: 'vertexMain',
       attributes: [
         { name: 'vertex', params: [] },
-        { name: 'workgroup_size', params: [['64', '1', '1']] }
+        { name: 'workgroup_size', params: [['64', '1', '1']] },
       ],
-      args: [
-        { name: 'input', type: { kind: 'wgsl:vec3f' } }
-      ],
+      args: [{ name: 'input', type: { kind: 'wgsl:vec3f' } }],
       returnType: { kind: 'wgsl:vec4f' },
-      body: ['return vec4f(input, 1.0);']
+      body: ['return vec4f(input, 1.0);'],
     };
 
     const result = link({ chunks: [functionWithAttributes] });
 
-    expect(result).toMatchInlineSnapshot(`
-      {
-        "definitions": "@vertex @workgroup_size(64, 1, 1)
+    expect(result.expression).toMatchInlineSnapshot(`"vertexMain"`);
+    expect(result.definitions).toMatchInlineSnapshot(`
+      "@vertex @workgroup_size(64, 1, 1)
       fn vertexMain(input: vec3f) -> vec4f {
       return vec4f(input, 1.0);
       }
 
-      ",
-        "expression": "vertexMain",
-      }
+      "
     `);
   });
 });

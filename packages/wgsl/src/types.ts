@@ -131,16 +131,15 @@ export type WithNameHint = {
   nameHint: string;
 };
 
-export type Call = {
-  kind: 'wgsl:call';
-  args: { name: string; type: ChunkBase }[];
-};
-
-export type Fn = {
+export type Fn<
+  TArgs extends readonly ChunkBase[] = readonly ChunkBase[],
+  TReturn extends ChunkBase = ChunkBase,
+  TAttribs extends readonly Attribute[] = readonly Attribute[],
+> = {
   kind: 'wgsl:fn';
   nameHint: string;
-  args: { name: string; type: ChunkBase }[];
-  returnType: ChunkBase;
-  body: (ChunkBase | string)[];
-  attributes?: Attribute[] | undefined;
+  args: { [K in keyof TArgs]: { name: string; type: TArgs[K] } };
+  returnType: TReturn;
+  body: readonly (ChunkBase | string)[];
+  attributes: TAttribs;
 };
