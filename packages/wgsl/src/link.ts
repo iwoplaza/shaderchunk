@@ -61,11 +61,15 @@ function createName(ctx: Context, chunk: wgsl.ChunkBase): string {
   return name;
 }
 
-function linkChunk(ctx: Context, chunk: wgsl.ChunkBase): string {
-  if (chunk.kind in simpleChunks) {
-    return simpleChunks[chunk.kind];
+function linkDataType(ctx: Context, dataType: wgsl.DataType): string {
+  if (typeof dataType === 'string' && dataType in simpleChunks) {
+    return simpleChunks[dataType];
   }
 
+  return linkChunk(ctx, dataType as wgsl.ChunkBase);
+}
+
+function linkChunk(ctx: Context, chunk: wgsl.ChunkBase): string {
   if (ctx.linked.has(chunk)) {
     return ctx.linked.get(chunk) as string;
   }
@@ -77,13 +81,13 @@ function linkChunk(ctx: Context, chunk: wgsl.ChunkBase): string {
     // Generate parameter list
     const params = fnChunk.args
       .map((arg) => {
-        const paramType = linkChunk(ctx, arg.type);
+        const paramType = linkDataType(ctx, arg.type);
         return `${arg.name}: ${paramType}`;
       })
       .join(', ');
 
     // Generate return type
-    const returnType = linkChunk(ctx, fnChunk.returnType);
+    const returnType = linkDataType(ctx, fnChunk.returnType);
 
     // Generate function body
     const body = fnChunk.body
@@ -132,7 +136,7 @@ function linkChunk(ctx: Context, chunk: wgsl.ChunkBase): string {
                 .map((attr) => generateAttribute(ctx, attr))
                 .join(' ') + ' '
             : '';
-        return `  ${fieldAttribs}${key}: ${linkChunk(ctx, prop.type)};`;
+        return `  ${fieldAttribs}${key}: ${linkDataType(ctx, prop.type)};`;
       })
       .join('\n')}\n};\n\n`;
 
@@ -146,8 +150,8 @@ function linkChunk(ctx: Context, chunk: wgsl.ChunkBase): string {
   }
 
   if (chunk.kind === 'wgsl:array') {
-    const arrayChunk = chunk as wgsl.Array<wgsl.ChunkBase, number>;
-    const elementType = linkChunk(ctx, arrayChunk.elem);
+    const arrayChunk = chunk as wgsl.Array;
+    const elementType = linkDataType(ctx, arrayChunk.elem);
     return `array<${elementType}, ${arrayChunk.count}>`;
   }
 

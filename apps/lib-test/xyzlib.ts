@@ -4,14 +4,14 @@
 
 import type * as wgslType from '@shaderchunk/wgsl';
 
-export const f32: wgslType.F32 = { kind: 'wgsl:f32' };
-export const vec2f: wgslType.Vec2f = { kind: 'wgsl:vec2f' };
-export const vec3f: wgslType.Vec3f = { kind: 'wgsl:vec3f' };
-export const vec4f: wgslType.Vec4f = { kind: 'wgsl:vec4f' };
+export const f32: wgslType.F32 = 'wgsl:f32';
+export const vec2f: wgslType.Vec2f = 'wgsl:vec2f';
+export const vec3f: wgslType.Vec3f = 'wgsl:vec3f';
+export const vec4f: wgslType.Vec4f = 'wgsl:vec4f';
 
 export function wgslFn<
-  TArgs extends [string, wgslType.ChunkBase][] | [],
-  TReturn extends wgslType.ChunkBase,
+  TArgs extends [string, wgslType.DataType][] | [],
+  TReturn extends wgslType.DataType,
 >(
   args: TArgs,
   returnType: TReturn,

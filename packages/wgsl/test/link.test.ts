@@ -8,10 +8,10 @@ describe('link', () => {
       kind: 'wgsl:fn',
       nameHint: 'addF32',
       args: [
-        { name: 'a', type: { kind: 'wgsl:f32' } },
-        { name: 'b', type: { kind: 'wgsl:f32' } },
+        { name: 'a', type: 'wgsl:f32' },
+        { name: 'b', type: 'wgsl:f32' },
       ],
-      returnType: { kind: 'wgsl:f32' },
+      returnType: 'wgsl:f32',
       body: ['{\n', 'return a + b;\n', '}\n'],
       attribs: [],
     };
@@ -35,27 +35,27 @@ describe('link', () => {
       kind: 'wgsl:fn',
       nameHint: 'processData',
       args: [
-        { name: 'b', type: { kind: 'wgsl:bool' } },
-        { name: 'f16', type: { kind: 'wgsl:f16' } },
-        { name: 'i', type: { kind: 'wgsl:i32' } },
-        { name: 'u', type: { kind: 'wgsl:u32' } },
-        { name: 'v2f', type: { kind: 'wgsl:vec2f' } },
-        { name: 'v2i', type: { kind: 'wgsl:vec2i' } },
-        { name: 'v2u', type: { kind: 'wgsl:vec2u' } },
-        { name: 'v2h', type: { kind: 'wgsl:vec2h' } },
-        { name: 'v2b', type: { kind: 'wgsl:vec2b' } },
-        { name: 'v3f', type: { kind: 'wgsl:vec3f' } },
-        { name: 'v3i', type: { kind: 'wgsl:vec3i' } },
-        { name: 'v3u', type: { kind: 'wgsl:vec3u' } },
-        { name: 'v3h', type: { kind: 'wgsl:vec3h' } },
-        { name: 'v3b', type: { kind: 'wgsl:vec3b' } },
-        { name: 'v4f', type: { kind: 'wgsl:vec4f' } },
-        { name: 'v4i', type: { kind: 'wgsl:vec4i' } },
-        { name: 'v4u', type: { kind: 'wgsl:vec4u' } },
-        { name: 'v4h', type: { kind: 'wgsl:vec4h' } },
-        { name: 'v4b', type: { kind: 'wgsl:vec4b' } },
+        { name: 'b', type: 'wgsl:bool' },
+        { name: 'f16', type: 'wgsl:f16' },
+        { name: 'i', type: 'wgsl:i32' },
+        { name: 'u', type: 'wgsl:u32' },
+        { name: 'v2f', type: 'wgsl:vec2f' },
+        { name: 'v2i', type: 'wgsl:vec2i' },
+        { name: 'v2u', type: 'wgsl:vec2u' },
+        { name: 'v2h', type: 'wgsl:vec2h' },
+        { name: 'v2b', type: 'wgsl:vec2b' },
+        { name: 'v3f', type: 'wgsl:vec3f' },
+        { name: 'v3i', type: 'wgsl:vec3i' },
+        { name: 'v3u', type: 'wgsl:vec3u' },
+        { name: 'v3h', type: 'wgsl:vec3h' },
+        { name: 'v3b', type: 'wgsl:vec3b' },
+        { name: 'v4f', type: 'wgsl:vec4f' },
+        { name: 'v4i', type: 'wgsl:vec4i' },
+        { name: 'v4u', type: 'wgsl:vec4u' },
+        { name: 'v4h', type: 'wgsl:vec4h' },
+        { name: 'v4b', type: 'wgsl:vec4b' },
       ],
-      returnType: { kind: 'wgsl:vec4f' },
+      returnType: 'wgsl:vec4f',
       body: ['{\n','  return v4f;\n', '}\n'],
     } as const;
 
@@ -76,10 +76,10 @@ describe('link', () => {
       kind: 'wgsl:struct' as const,
       nameHint: 'VertexData',
       props: {
-        position: { type: { kind: 'wgsl:vec3f' } },
-        color: { type: { kind: 'wgsl:vec4f' } },
-        id: { type: { kind: 'wgsl:u32' } },
-        active: { type: { kind: 'wgsl:bool' } },
+        position: { type: 'wgsl:vec3f' },
+        color: { type: 'wgsl:vec4f' },
+        id: { type: 'wgsl:u32' },
+        active: { type: 'wgsl:bool' },
       },
     };
 
@@ -101,7 +101,7 @@ describe('link', () => {
   it('should generate correct WGSL array types', () => {
     const arrayType = {
       kind: 'wgsl:array' as const,
-      elem: { kind: 'wgsl:f32' },
+      elem: 'wgsl:f32',
       count: 10,
     };
 
@@ -115,9 +115,9 @@ describe('link', () => {
       kind: 'wgsl:struct',
       nameHint: 'Vertex',
       props: {
-        position: { type: { kind: 'wgsl:vec3f' } },
-        normal: { type: { kind: 'wgsl:vec3f' } },
-        uv: { type: { kind: 'wgsl:vec2f' } },
+        position: { type: 'wgsl:vec3f' },
+        normal: { type: 'wgsl:vec3f' },
+        uv: { type: 'wgsl:vec2f' },
       },
     } as const;
 
@@ -132,7 +132,7 @@ describe('link', () => {
       nameHint: 'processVertices',
       args: [
         { name: 'vertices', type: vertexArray },
-        { name: 'index', type: { kind: 'wgsl:u32' } },
+        { name: 'index', type: 'wgsl:u32' },
       ],
       returnType: vertexStruct,
       body: ['return vertices[index];'],
@@ -244,11 +244,11 @@ describe('link', () => {
 
       const attribute: Attribute = {
         name: 'custom_type',
-        params: [[{ kind: 'wgsl:f32' }]],
+        params: [['baz']],
       };
 
       const result = generateAttribute(ctx, attribute);
-      expect(result).toBe('@custom_type(f32)');
+      expect(result).toBe('@custom_type(baz)');
     });
   });
 
@@ -258,22 +258,22 @@ describe('link', () => {
       nameHint: 'VertexInput',
       props: {
         position: {
-          type: { kind: 'wgsl:vec3f' },
+          type: 'wgsl:vec3f',
           attribs: [
             { name: 'builtin', params: [['position']] },
             { name: 'invariant', params: [] },
           ],
         },
         normal: {
-          type: { kind: 'wgsl:vec3f' },
+          type: 'wgsl:vec3f',
           attribs: [{ name: 'location', params: [['0']] }],
         },
         uv: {
-          type: { kind: 'wgsl:vec2f' },
+          type: 'wgsl:vec2f',
           attribs: [{ name: 'location', params: [['1']] }],
         },
         instanceId: {
-          type: { kind: 'wgsl:u32' },
+          type: 'wgsl:u32',
           attribs: [],
         },
       },
@@ -302,8 +302,8 @@ describe('link', () => {
         { name: 'vertex', params: [] },
         { name: 'workgroup_size', params: [['64', '1', '1']] },
       ],
-      args: [{ name: 'input', type: { kind: 'wgsl:vec3f' } }],
-      returnType: { kind: 'wgsl:vec4f' },
+      args: [{ name: 'input', type: 'wgsl:vec3f' }],
+      returnType: 'wgsl:vec4f',
       body: ['return vec4f(input, 1.0);'],
     };
 

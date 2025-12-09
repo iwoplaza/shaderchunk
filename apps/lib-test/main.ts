@@ -11,8 +11,8 @@ const sphere = wgslFn([['p', vec3f]], f32)`{
 const plane = {
   kind: 'wgsl:fn',
   nameHint: 'plane',
-  args: [{ name: 'p', type: { kind: 'wgsl:vec3f' } }],
-  returnType: { kind: 'wgsl:f32' },
+  args: [{ name: 'p', type: 'wgsl:vec3f' }],
+  returnType: 'wgsl:f32',
   body: ['{\n', '  return p.y;\n', '}\n'],
   attribs: [],
 } as const;

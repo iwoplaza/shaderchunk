@@ -9,9 +9,9 @@ type SdfFn = wgsl.Fn<[p: wgsl.Vec3f], wgsl.F32, []>;
 export function sdfUnion(objects: SdfFn[]): SdfFn {
   return {
     kind: 'wgsl:fn',
-    args: [{ name: 'p', type: { kind: 'wgsl:vec3f' } }],
+    args: [{ name: 'p', type: 'wgsl:vec3f' }],
     nameHint: 'sdfUnion',
-    returnType: { kind: 'wgsl:f32' },
+    returnType: 'wgsl:f32',
     body: [
       '{\n',
       '  var d = f32(1e38);\n',
