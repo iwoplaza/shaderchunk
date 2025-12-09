@@ -12,7 +12,8 @@ describe('link', () => {
         { name: 'b', type: { kind: 'wgsl:f32' } },
       ],
       returnType: { kind: 'wgsl:f32' },
-      body: ['return a + b;'],
+      body: ['{\n', 'return a + b;\n', '}\n'],
+      attribs: [],
     };
 
     const result = link({
@@ -52,13 +53,10 @@ describe('link', () => {
         { name: 'v4i', type: { kind: 'wgsl:vec4i' } },
         { name: 'v4u', type: { kind: 'wgsl:vec4u' } },
         { name: 'v4h', type: { kind: 'wgsl:vec4h' } },
-        {
-          name: 'v4b',
-          type: { kind: 'wgsl:vec4', elementType: { kind: 'wgsl:bool' } },
-        },
+        { name: 'v4b', type: { kind: 'wgsl:vec4b' } },
       ],
       returnType: { kind: 'wgsl:vec4f' },
-      body: ['return v4f;'],
+      body: ['{\n','  return v4f;\n', '}\n'],
     } as const;
 
     const result = link({ chunks: [complexFunction] });
@@ -66,7 +64,7 @@ describe('link', () => {
     expect(result.expression).toMatchInlineSnapshot(`"processData"`);
     expect(result.definitions).toMatchInlineSnapshot(`
       "fn processData(b: bool, f16: f16, i: i32, u: u32, v2f: vec2f, v2i: vec2i, v2u: vec2u, v2h: vec2h, v2b: vec2<bool>, v3f: vec3f, v3i: vec3i, v3u: vec3u, v3h: vec3h, v3b: vec3<bool>, v4f: vec4f, v4i: vec4i, v4u: vec4u, v4h: vec4h, v4b: vec4<bool>) -> vec4f {
-      return v4f;
+        return v4f;
       }
 
       "
@@ -103,7 +101,7 @@ describe('link', () => {
   it('should generate correct WGSL array types', () => {
     const arrayType = {
       kind: 'wgsl:array' as const,
-      elementType: { kind: 'wgsl:f32' },
+      elem: { kind: 'wgsl:f32' },
       count: 10,
     };
 
@@ -125,7 +123,7 @@ describe('link', () => {
 
     const vertexArray = {
       kind: 'wgsl:array' as const,
-      elementType: vertexStruct,
+      elem: vertexStruct,
       count: 100,
     };
 
@@ -138,6 +136,7 @@ describe('link', () => {
       ],
       returnType: vertexStruct,
       body: ['return vertices[index];'],
+      attribs: [],
     };
 
     const result = link({ chunks: [processVerticesFunction] });
@@ -150,10 +149,7 @@ describe('link', () => {
         uv: vec2f;
       };
 
-      fn processVertices(vertices: array<Vertex, 100>, index: u32) -> Vertex {
-      return vertices[index];
-      }
-
+      fn processVertices(vertices: array<Vertex, 100>, index: u32) -> Vertex return vertices[index];
       "
     `);
   });
@@ -302,7 +298,7 @@ describe('link', () => {
     const functionWithAttributes: Fn = {
       kind: 'wgsl:fn',
       nameHint: 'vertexMain',
-      attributes: [
+      attribs: [
         { name: 'vertex', params: [] },
         { name: 'workgroup_size', params: [['64', '1', '1']] },
       ],
@@ -316,10 +312,7 @@ describe('link', () => {
     expect(result.expression).toMatchInlineSnapshot(`"vertexMain"`);
     expect(result.definitions).toMatchInlineSnapshot(`
       "@vertex @workgroup_size(64, 1, 1)
-      fn vertexMain(input: vec3f) -> vec4f {
-      return vec4f(input, 1.0);
-      }
-
+      fn vertexMain(input: vec3f) -> vec4f return vec4f(input, 1.0);
       "
     `);
   });

@@ -38,14 +38,18 @@ const simpleChunks = {
   'wgsl:vec4i': 'vec4i',
   'wgsl:vec4u': 'vec4u',
   'wgsl:vec4h': 'vec4h',
+  'wgsl:vec4b': 'vec4<bool>',
 };
 
 function createName(ctx: Context, chunk: wgsl.ChunkBase): string {
   let nameHint = 'item';
+
+  const namedChunk = chunk as wgsl.ChunkBase & wgsl.WithNameHint;
   if (
-    typeof (chunk as wgsl.ChunkBase & wgsl.WithNameHint).nameHint === 'string'
+    typeof namedChunk.nameHint === 'string' &&
+    namedChunk.nameHint.length > 0
   ) {
-    nameHint = (chunk as wgsl.ChunkBase & wgsl.WithNameHint).nameHint;
+    nameHint = namedChunk.nameHint;
   }
 
   let name = nameHint;
@@ -58,27 +62,12 @@ function createName(ctx: Context, chunk: wgsl.ChunkBase): string {
 }
 
 function linkChunk(ctx: Context, chunk: wgsl.ChunkBase): string {
-  if (ctx.linked.has(chunk)) {
-    return ctx.linked.get(chunk) as string;
-  }
-
   if (chunk.kind in simpleChunks) {
     return simpleChunks[chunk.kind];
   }
 
-  if (chunk.kind === 'wgsl:vec2') {
-    const vecChunk = chunk as wgsl.Vec2;
-    return `vec2<${linkChunk(ctx, vecChunk.elementType)}>`;
-  }
-
-  if (chunk.kind === 'wgsl:vec3') {
-    const vecChunk = chunk as wgsl.Vec3;
-    return `vec3<${linkChunk(ctx, vecChunk.elementType)}>`;
-  }
-
-  if (chunk.kind === 'wgsl:vec4') {
-    const vecChunk = chunk as wgsl.Vec4;
-    return `vec4<${linkChunk(ctx, vecChunk.elementType)}>`;
+  if (ctx.linked.has(chunk)) {
+    return ctx.linked.get(chunk) as string;
   }
 
   if (chunk.kind === 'wgsl:fn') {
@@ -108,13 +97,13 @@ function linkChunk(ctx: Context, chunk: wgsl.ChunkBase): string {
 
     // Generate function attributes if any
     const functionAttribs =
-      fnChunk.attributes && fnChunk.attributes.length > 0
-        ? fnChunk.attributes
+      fnChunk.attribs && fnChunk.attribs.length > 0
+        ? fnChunk.attribs
             .map((attr) => generateAttribute(ctx, attr))
             .join(' ') + '\n'
         : '';
 
-    const def = `${functionAttribs}fn ${name}(${params}) -> ${returnType} {\n${body}\n}\n\n`;
+    const def = `${functionAttribs}fn ${name}(${params}) -> ${returnType} ${body}\n`;
     ctx.definitions += def;
 
     ctx.linked.set(chunk, name);
@@ -158,7 +147,7 @@ function linkChunk(ctx: Context, chunk: wgsl.ChunkBase): string {
 
   if (chunk.kind === 'wgsl:array') {
     const arrayChunk = chunk as wgsl.Array<wgsl.ChunkBase, number>;
-    const elementType = linkChunk(ctx, arrayChunk.elementType);
+    const elementType = linkChunk(ctx, arrayChunk.elem);
     return `array<${elementType}, ${arrayChunk.count}>`;
   }
 

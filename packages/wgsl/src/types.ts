@@ -19,82 +19,23 @@ export type U32 = {
 };
 
 // Vector types with different component types
-export type Vec2f = {
-  kind: 'wgsl:vec2f';
-};
+export type Vec2f = { kind: 'wgsl:vec2f' };
+export type Vec2i = { kind: 'wgsl:vec2i' };
+export type Vec2u = { kind: 'wgsl:vec2u' };
+export type Vec2h = { kind: 'wgsl:vec2h' };
+export type Vec2b = { kind: 'wgsl:vec2b' };
 
-export type Vec2i = {
-  kind: 'wgsl:vec2i';
-};
+export type Vec3f = { kind: 'wgsl:vec3f' };
+export type Vec3i = { kind: 'wgsl:vec3i' };
+export type Vec3u = { kind: 'wgsl:vec3u' };
+export type Vec3h = { kind: 'wgsl:vec3h' };
+export type Vec3b = { kind: 'wgsl:vec3b' };
 
-export type Vec2u = {
-  kind: 'wgsl:vec2u';
-};
-
-export type Vec2h = {
-  kind: 'wgsl:vec2h';
-};
-
-export type Vec2b = {
-  kind: 'wgsl:vec2b';
-};
-
-export type Vec2<
-  T extends F32 | I32 | U32 | F16 | Bool = F32 | I32 | U32 | F16 | Bool,
-> = {
-  kind: 'wgsl:vec2';
-  elementType: T;
-};
-
-export type Vec3f = {
-  kind: 'wgsl:vec3f';
-};
-
-export type Vec3i = {
-  kind: 'wgsl:vec3i';
-};
-
-export type Vec3u = {
-  kind: 'wgsl:vec3u';
-};
-
-export type Vec3h = {
-  kind: 'wgsl:vec3h';
-};
-
-export type Vec3b = {
-  kind: 'wgsl:vec3b';
-};
-
-export type Vec3<
-  T extends F32 | I32 | U32 | F16 | Bool = F32 | I32 | U32 | F16 | Bool,
-> = {
-  kind: 'wgsl:vec3';
-  elementType: T;
-};
-
-export type Vec4f = {
-  kind: 'wgsl:vec4f';
-};
-
-export type Vec4i = {
-  kind: 'wgsl:vec4i';
-};
-
-export type Vec4u = {
-  kind: 'wgsl:vec4u';
-};
-
-export type Vec4h = {
-  kind: 'wgsl:vec4h';
-};
-
-export type Vec4<
-  T extends F32 | I32 | U32 | F16 | Bool = F32 | I32 | U32 | F16 | Bool,
-> = {
-  kind: 'wgsl:vec4';
-  elementType: T;
-};
+export type Vec4f = { kind: 'wgsl:vec4f' };
+export type Vec4i = { kind: 'wgsl:vec4i' };
+export type Vec4u = { kind: 'wgsl:vec4u' };
+export type Vec4h = { kind: 'wgsl:vec4h' };
+export type Vec4b = { kind: 'wgsl:vec4b' };
 
 export type Attribute = {
   name: string;
@@ -119,7 +60,7 @@ export type Struct<
 
 export type Array<TElem extends ChunkBase, TCount extends number> = {
   kind: 'wgsl:array';
-  elementType: TElem;
+  elem: TElem;
   count: TCount;
 };
 
@@ -138,8 +79,8 @@ export type Fn<
 > = {
   kind: 'wgsl:fn';
   nameHint: string;
-  args: { [K in keyof TArgs]: { name: string; type: TArgs[K] } };
+  args: Readonly<{ [K in keyof TArgs]: { name: string; type: TArgs[K] } }>;
   returnType: TReturn;
   body: readonly (ChunkBase | string)[];
-  attributes: TAttribs;
+  attribs: Readonly<TAttribs>;
 };
