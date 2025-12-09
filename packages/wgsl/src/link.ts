@@ -1,7 +1,7 @@
-import type { ChunkBase, WithNameHint } from './types.ts';
+import type { ChunkBase, WithNameHint, Fn } from './types.ts';
 
 export type LinkOptions = {
-  chunks: ChunkBase[],
+  chunks: (ChunkBase | string)[],
 };
 
 export type LinkResult = {
@@ -16,10 +16,29 @@ export type Context = {
 };
 
 const simpleChunks = {
+  // Primitive types
+  'wgsl:bool': 'bool',
+  'wgsl:f16': 'f16',
   'wgsl:f32': 'f32',
+  'wgsl:i32': 'i32',
+  'wgsl:u32': 'u32',
+  
+  // Vector types
   'wgsl:vec2f': 'vec2f',
+  'wgsl:vec2i': 'vec2i',
+  'wgsl:vec2u': 'vec2u',
+  'wgsl:vec2h': 'vec2h',
+  'wgsl:vec2b': 'vec2<bool>',
   'wgsl:vec3f': 'vec3f',
+  'wgsl:vec3i': 'vec3i',
+  'wgsl:vec3u': 'vec3u',
+  'wgsl:vec3h': 'vec3h',
+  'wgsl:vec3b': 'vec3<bool>',
   'wgsl:vec4f': 'vec4f',
+  'wgsl:vec4i': 'vec4i',
+  'wgsl:vec4u': 'vec4u',
+  'wgsl:vec4h': 'vec4h',
+  'wgsl:vec4b': 'vec4<bool>',
 };
 
 function createName(ctx: Context, chunk: ChunkBase): string {
@@ -47,7 +66,7 @@ function linkChunk(ctx: Context, chunk: ChunkBase): string {
   }
 
   if (chunk.kind === 'wgsl:fn') {
-    const fnChunk = chunk as import('./types.js').Fn;
+    const fnChunk = chunk as Fn;
     const name = createName(ctx, chunk);
 
     // Generate parameter list
@@ -65,9 +84,9 @@ function linkChunk(ctx: Context, chunk: ChunkBase): string {
         return part;
       }
       return linkChunk(ctx, part);
-    }).join(' ');
+    }).join('');
 
-    const def = `fn ${name}(${params}) -> ${returnType} { ${body} }\n\n`;
+    const def = `fn ${name}(${params}) -> ${returnType} {\n${body}\n}\n\n`;
     ctx.definitions += def;
 
     ctx.linked.set(chunk, name);
@@ -86,7 +105,11 @@ export function link(options: LinkOptions): LinkResult {
   let expression = '';
 
   for (const chunk of options.chunks) {
-    expression += linkChunk(ctx, chunk);
+    if (typeof chunk === 'string') {
+      expression += chunk;
+    } else {
+      expression += linkChunk(ctx, chunk);
+    }
   }
 
   return {
