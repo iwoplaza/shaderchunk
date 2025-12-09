@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { link } from '../src/link.js';
-import type { Fn } from '../src/types.js';
+import { link, generateAttribute } from '../src/link.js';
+import type { Fn, Attribute } from '../src/types.js';
 
 describe('link', () => {
   it('should generate correct WGSL function definition for adding two f32 values', () => {
@@ -162,6 +162,152 @@ describe('link', () => {
 
       ",
         "expression": "processVertices",
+      }
+    `);
+  });
+
+  describe('generateAttribute', () => {
+    it('should generate simple attribute with no parameters', () => {
+      const ctx = {
+        usedNames: new Set<string>(),
+        linked: new WeakMap(),
+        definitions: '',
+      };
+      
+      const attribute: Attribute = {
+        name: 'builtin',
+        params: []
+      };
+      
+      const result = generateAttribute(ctx, attribute);
+      expect(result).toBe('@builtin');
+    });
+
+    it('should generate attribute with string parameters', () => {
+      const ctx = {
+        usedNames: new Set<string>(),
+        linked: new WeakMap(),
+        definitions: '',
+      };
+      
+      const attribute: Attribute = {
+        name: 'size',
+        params: [['16']]
+      };
+      
+      const result = generateAttribute(ctx, attribute);
+      expect(result).toBe('@size(16)');
+    });
+
+    it('should generate attribute with multiple string parameters', () => {
+      const ctx = {
+        usedNames: new Set<string>(),
+        linked: new WeakMap(),
+        definitions: '',
+      };
+      
+      const attribute: Attribute = {
+        name: 'workgroup_size',
+        params: [['16', '16', '1']]
+      };
+      
+      const result = generateAttribute(ctx, attribute);
+      expect(result).toBe('@workgroup_size(16, 16, 1)');
+    });
+
+    it('should generate attribute with mixed parameters', () => {
+      const ctx = {
+        usedNames: new Set<string>(),
+        linked: new WeakMap(),
+        definitions: '',
+      };
+      
+      const attribute: Attribute = {
+        name: 'builtin',
+        params: [['position']]
+      };
+      
+      const result = generateAttribute(ctx, attribute);
+      expect(result).toBe('@builtin(position)');
+    });
+
+    it('should generate attribute with multiple parameter groups', () => {
+      const ctx = {
+        usedNames: new Set<string>(),
+        linked: new WeakMap(),
+        definitions: '',
+      };
+      
+      const attribute: Attribute = {
+        name: 'complex',
+        params: [['param1'], ['param2', 'param3']]
+      };
+      
+      const result = generateAttribute(ctx, attribute);
+      expect(result).toBe('@complex(param1, param2, param3)');
+    });
+
+    it('should generate attribute with chunk-based parameters', () => {
+      const ctx = {
+        usedNames: new Set<string>(),
+        linked: new WeakMap(),
+        definitions: '',
+      };
+      
+      const attribute: Attribute = {
+        name: 'custom_type',
+        params: [[{ kind: 'wgsl:f32' }]]
+      };
+      
+      const result = generateAttribute(ctx, attribute);
+      expect(result).toBe('@custom_type(f32)');
+    });
+  });
+
+  it('should generate struct with attributes on fields', () => {
+    const structWithAttributes = {
+      kind: 'wgsl:struct' as const,
+      nameHint: 'VertexInput',
+      props: {
+        position: { 
+          type: { kind: 'wgsl:vec3f' },
+          attribs: [
+            { name: 'builtin', params: [['position']] },
+            { name: 'invariant', params: [] }
+          ]
+        },
+        normal: { 
+          type: { kind: 'wgsl:vec3f' },
+          attribs: [
+            { name: 'location', params: [['0']] }
+          ]
+        },
+        uv: { 
+          type: { kind: 'wgsl:vec2f' },
+          attribs: [
+            { name: 'location', params: [['1']] }
+          ]
+        },
+        instanceId: { 
+          type: { kind: 'wgsl:u32' },
+          attribs: []
+        }
+      }
+    };
+
+    const result = link({ chunks: [structWithAttributes] });
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "definitions": "struct VertexInput {
+        @builtin(position) @invariant position: vec3f;
+        @location(0) normal: vec3f;
+        @location(1) uv: vec2f;
+        instanceId: u32;
+      };
+
+      ",
+        "expression": "VertexInput",
       }
     `);
   });

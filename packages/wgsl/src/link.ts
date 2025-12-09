@@ -1,4 +1,4 @@
-import type { ChunkBase, WithNameHint, Fn, Struct, Array, Vec2, Vec3, Vec4 } from './types.ts';
+import type { ChunkBase, WithNameHint, Fn, Struct, Array, Vec2, Vec3, Vec4, Attribute, StructProperty } from './types.ts';
 
 export type LinkOptions = {
   chunks: (ChunkBase | string)[],
@@ -120,7 +120,12 @@ function linkChunk(ctx: Context, chunk: ChunkBase): string {
     
     // Generate the struct definition
     const structDef = `struct ${structName} {\n${Object.entries(structChunk.props)
-      .map(([key, prop]) => `  ${key}: ${linkChunk(ctx, prop.type)};`)
+      .map(([key, prop]) => {
+        const fieldAttribs = prop.attribs && prop.attribs.length > 0 
+          ? prop.attribs.map(attr => generateAttribute(ctx, attr)).join(' ') + ' '
+          : '';
+        return `  ${fieldAttribs}${key}: ${linkChunk(ctx, prop.type)};`;
+      })
       .join('\n')}\n};\n\n`;
     
     // Add the definition to the context
@@ -139,6 +144,23 @@ function linkChunk(ctx: Context, chunk: ChunkBase): string {
   }
 
   throw new Error(`Unknown kind of shader chunk: ${chunk.kind}`);
+}
+
+export function generateAttribute(ctx: Context, attribute: Attribute): string {
+  if (attribute.params.length === 0) {
+    return `@${attribute.name}`;
+  }
+  
+  const params = attribute.params.map(paramGroup => {
+    return paramGroup.map(param => {
+      if (typeof param === 'string') {
+        return param;
+      }
+      return linkChunk(ctx, param);
+    }).join(', ');
+  }).join(', ');
+  
+  return `@${attribute.name}(${params})`;
 }
 
 export function link(options: LinkOptions): LinkResult {
