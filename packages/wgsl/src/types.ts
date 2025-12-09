@@ -1,134 +1,146 @@
 export type Bool = {
-  kind: 'wgsl:bool',
+  kind: 'wgsl:bool';
 };
 
 export type F16 = {
-  kind: 'wgsl:f16',
+  kind: 'wgsl:f16';
 };
 
 export type F32 = {
-  kind: 'wgsl:f32',
+  kind: 'wgsl:f32';
 };
 
 export type I32 = {
-  kind: 'wgsl:i32',
+  kind: 'wgsl:i32';
 };
 
 export type U32 = {
-  kind: 'wgsl:u32',
+  kind: 'wgsl:u32';
 };
 
 // Vector types with different component types
 export type Vec2f = {
-  kind: 'wgsl:vec2f',
+  kind: 'wgsl:vec2f';
 };
 
 export type Vec2i = {
-  kind: 'wgsl:vec2i',
+  kind: 'wgsl:vec2i';
 };
 
 export type Vec2u = {
-  kind: 'wgsl:vec2u',
+  kind: 'wgsl:vec2u';
 };
 
 export type Vec2h = {
-  kind: 'wgsl:vec2h',
+  kind: 'wgsl:vec2h';
 };
 
 export type Vec2b = {
-  kind: 'wgsl:vec2b',
+  kind: 'wgsl:vec2b';
 };
 
-export type Vec2<T extends F32 | I32 | U32 | F16 | Bool = F32 | I32 | U32 | F16 | Bool> = {
-  kind: 'wgsl:vec2',
+export type Vec2<
+  T extends F32 | I32 | U32 | F16 | Bool = F32 | I32 | U32 | F16 | Bool,
+> = {
+  kind: 'wgsl:vec2';
   elementType: T;
 };
 
 export type Vec3f = {
-  kind: 'wgsl:vec3f',
+  kind: 'wgsl:vec3f';
 };
 
 export type Vec3i = {
-  kind: 'wgsl:vec3i',
+  kind: 'wgsl:vec3i';
 };
 
 export type Vec3u = {
-  kind: 'wgsl:vec3u',
+  kind: 'wgsl:vec3u';
 };
 
 export type Vec3h = {
-  kind: 'wgsl:vec3h',
+  kind: 'wgsl:vec3h';
 };
 
 export type Vec3b = {
-  kind: 'wgsl:vec3b',
+  kind: 'wgsl:vec3b';
 };
 
-export type Vec3<T extends F32 | I32 | U32 | F16 | Bool = F32 | I32 | U32 | F16 | Bool> = {
-  kind: 'wgsl:vec3',
+export type Vec3<
+  T extends F32 | I32 | U32 | F16 | Bool = F32 | I32 | U32 | F16 | Bool,
+> = {
+  kind: 'wgsl:vec3';
   elementType: T;
 };
 
 export type Vec4f = {
-  kind: 'wgsl:vec4f',
+  kind: 'wgsl:vec4f';
 };
 
 export type Vec4i = {
-  kind: 'wgsl:vec4i',
+  kind: 'wgsl:vec4i';
 };
 
 export type Vec4u = {
-  kind: 'wgsl:vec4u',
+  kind: 'wgsl:vec4u';
 };
 
 export type Vec4h = {
-  kind: 'wgsl:vec4h',
+  kind: 'wgsl:vec4h';
 };
 
-export type Vec4<T extends F32 | I32 | U32 | F16 | Bool = F32 | I32 | U32 | F16 | Bool> = {
-  kind: 'wgsl:vec4',
+export type Vec4<
+  T extends F32 | I32 | U32 | F16 | Bool = F32 | I32 | U32 | F16 | Bool,
+> = {
+  kind: 'wgsl:vec4';
   elementType: T;
 };
 
 export type Attribute = {
-  name: string,
-  params: ((ChunkBase | string)[])[],
-}
-
-export type StructProperty<TType extends ChunkBase = ChunkBase, TAttribs extends Attribute[] = Attribute[]> = {
-  type: TType,
-  attribs: TAttribs,
+  name: string;
+  params: (ChunkBase | string)[][];
 };
 
-export type Struct<T extends Record<string, StructProperty> = Record<string, StructProperty>> = {
-  kind: 'wgsl:struct',
-  nameHint: string,
-  props: T,
+export type StructProperty<
+  TType extends ChunkBase = ChunkBase,
+  TAttribs extends Attribute[] = Attribute[],
+> = {
+  type: TType;
+  attribs: TAttribs;
+};
+
+export type Struct<
+  T extends Record<string, StructProperty> = Record<string, StructProperty>,
+> = {
+  kind: 'wgsl:struct';
+  nameHint: string;
+  props: T;
 };
 
 export type Array<TElem extends ChunkBase, TCount extends number> = {
-  kind: 'wgsl:array',
-  elementType: TElem,
-  count: TCount,
+  kind: 'wgsl:array';
+  elementType: TElem;
+  count: TCount;
 };
 
 export type ChunkBase = {
-  kind: `wgsl:${string}`,
+  kind: `wgsl:${string}`;
 };
 
 export type WithNameHint = {
-  nameHint: string,
+  nameHint: string;
 };
 
 export type Call = {
-  kind: 'wgsl:call',
-  args: { name: string, type: ChunkBase }[],
+  kind: 'wgsl:call';
+  args: { name: string; type: ChunkBase }[];
 };
 
 export type Fn = {
-  kind: 'wgsl:fn',
-  nameHint: string,
-  args: { name: string, type: ChunkBase }[],
-  returnType: ChunkBase,
-  body: (ChunkBase | string)[],
+  kind: 'wgsl:fn';
+  nameHint: string;
+  args: { name: string; type: ChunkBase }[];
+  returnType: ChunkBase;
+  body: (ChunkBase | string)[];
+  attributes?: Attribute[] | undefined;
 };

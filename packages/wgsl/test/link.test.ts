@@ -311,4 +311,34 @@ describe('link', () => {
       }
     `);
   });
+
+  it('should generate function with attributes', () => {
+    const functionWithAttributes: Fn = {
+      kind: 'wgsl:fn',
+      nameHint: 'vertexMain',
+      attributes: [
+        { name: 'vertex', params: [] },
+        { name: 'workgroup_size', params: [['64', '1', '1']] }
+      ],
+      args: [
+        { name: 'input', type: { kind: 'wgsl:vec3f' } }
+      ],
+      returnType: { kind: 'wgsl:vec4f' },
+      body: ['return vec4f(input, 1.0);']
+    };
+
+    const result = link({ chunks: [functionWithAttributes] });
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "definitions": "@vertex @workgroup_size(64, 1, 1)
+      fn vertexMain(input: vec3f) -> vec4f {
+      return vec4f(input, 1.0);
+      }
+
+      ",
+        "expression": "vertexMain",
+      }
+    `);
+  });
 });

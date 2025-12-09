@@ -1,18 +1,18 @@
-import type { ChunkBase, WithNameHint, Fn, Struct, Array, Vec2, Vec3, Vec4, Attribute, StructProperty } from './types.ts';
+import type * as wgsl from './types.ts';
 
 export type LinkOptions = {
-  chunks: (ChunkBase | string)[],
+  chunks: (wgsl.ChunkBase | string)[];
 };
 
 export type LinkResult = {
-  definitions: string,
-  expression: string,
+  definitions: string;
+  expression: string;
 };
 
 export type Context = {
-  usedNames: Set<string>,
-  linked: WeakMap<ChunkBase, string>,
-  definitions: string,
+  usedNames: Set<string>;
+  linked: WeakMap<wgsl.ChunkBase, string>;
+  definitions: string;
 };
 
 const simpleChunks = {
@@ -22,7 +22,7 @@ const simpleChunks = {
   'wgsl:f32': 'f32',
   'wgsl:i32': 'i32',
   'wgsl:u32': 'u32',
-  
+
   // Vector types
   'wgsl:vec2f': 'vec2f',
   'wgsl:vec2i': 'vec2i',
@@ -40,10 +40,12 @@ const simpleChunks = {
   'wgsl:vec4h': 'vec4h',
 };
 
-function createName(ctx: Context, chunk: ChunkBase): string {
+function createName(ctx: Context, chunk: wgsl.ChunkBase): string {
   let nameHint = 'item';
-  if (typeof (chunk as ChunkBase & WithNameHint).nameHint === 'string') {
-    nameHint = (chunk as ChunkBase & WithNameHint).nameHint;
+  if (
+    typeof (chunk as wgsl.ChunkBase & wgsl.WithNameHint).nameHint === 'string'
+  ) {
+    nameHint = (chunk as wgsl.ChunkBase & wgsl.WithNameHint).nameHint;
   }
 
   let name = nameHint;
@@ -55,7 +57,7 @@ function createName(ctx: Context, chunk: ChunkBase): string {
   return name;
 }
 
-function linkChunk(ctx: Context, chunk: ChunkBase): string {
+function linkChunk(ctx: Context, chunk: wgsl.ChunkBase): string {
   if (ctx.linked.has(chunk)) {
     return ctx.linked.get(chunk) as string;
   }
@@ -65,42 +67,54 @@ function linkChunk(ctx: Context, chunk: ChunkBase): string {
   }
 
   if (chunk.kind === 'wgsl:vec2') {
-    const vecChunk = chunk as Vec2;
+    const vecChunk = chunk as wgsl.Vec2;
     return `vec2<${linkChunk(ctx, vecChunk.elementType)}>`;
   }
 
   if (chunk.kind === 'wgsl:vec3') {
-    const vecChunk = chunk as Vec3;
+    const vecChunk = chunk as wgsl.Vec3;
     return `vec3<${linkChunk(ctx, vecChunk.elementType)}>`;
   }
 
   if (chunk.kind === 'wgsl:vec4') {
-    const vecChunk = chunk as Vec4;
+    const vecChunk = chunk as wgsl.Vec4;
     return `vec4<${linkChunk(ctx, vecChunk.elementType)}>`;
   }
 
   if (chunk.kind === 'wgsl:fn') {
-    const fnChunk = chunk as Fn;
+    const fnChunk = chunk as wgsl.Fn;
     const name = createName(ctx, chunk);
 
     // Generate parameter list
-    const params = fnChunk.args.map(arg => {
-      const paramType = linkChunk(ctx, arg.type);
-      return `${arg.name}: ${paramType}`;
-    }).join(', ');
+    const params = fnChunk.args
+      .map((arg) => {
+        const paramType = linkChunk(ctx, arg.type);
+        return `${arg.name}: ${paramType}`;
+      })
+      .join(', ');
 
     // Generate return type
     const returnType = linkChunk(ctx, fnChunk.returnType);
 
     // Generate function body
-    const body = fnChunk.body.map(part => {
-      if (typeof part === 'string') {
-        return part;
-      }
-      return linkChunk(ctx, part);
-    }).join('');
+    const body = fnChunk.body
+      .map((part) => {
+        if (typeof part === 'string') {
+          return part;
+        }
+        return linkChunk(ctx, part);
+      })
+      .join('');
 
-    const def = `fn ${name}(${params}) -> ${returnType} {\n${body}\n}\n\n`;
+    // Generate function attributes if any
+    const functionAttribs =
+      fnChunk.attributes && fnChunk.attributes.length > 0
+        ? fnChunk.attributes
+            .map((attr) => generateAttribute(ctx, attr))
+            .join(' ') + '\n'
+        : '';
+
+    const def = `${functionAttribs}fn ${name}(${params}) -> ${returnType} {\n${body}\n}\n\n`;
     ctx.definitions += def;
 
     ctx.linked.set(chunk, name);
@@ -108,37 +122,42 @@ function linkChunk(ctx: Context, chunk: ChunkBase): string {
   }
 
   if (chunk.kind === 'wgsl:struct') {
-    const structChunk = chunk as Struct;
-    
+    const structChunk = chunk as wgsl.Struct;
+
     // Check if this struct has already been defined
     if (ctx.linked.has(chunk)) {
       return ctx.linked.get(chunk) as string;
     }
-    
+
     // Create a unique name for the struct using the nameHint
     const structName = createName(ctx, chunk);
-    
+
     // Generate the struct definition
-    const structDef = `struct ${structName} {\n${Object.entries(structChunk.props)
+    const structDef = `struct ${structName} {\n${Object.entries(
+      structChunk.props,
+    )
       .map(([key, prop]) => {
-        const fieldAttribs = prop.attribs && prop.attribs.length > 0 
-          ? prop.attribs.map(attr => generateAttribute(ctx, attr)).join(' ') + ' '
-          : '';
+        const fieldAttribs =
+          prop.attribs && prop.attribs.length > 0
+            ? prop.attribs
+                .map((attr) => generateAttribute(ctx, attr))
+                .join(' ') + ' '
+            : '';
         return `  ${fieldAttribs}${key}: ${linkChunk(ctx, prop.type)};`;
       })
       .join('\n')}\n};\n\n`;
-    
+
     // Add the definition to the context
     ctx.definitions += structDef;
-    
+
     // Store the reference to avoid redefinition
     ctx.linked.set(chunk, structName);
-    
+
     return structName;
   }
 
   if (chunk.kind === 'wgsl:array') {
-    const arrayChunk = chunk as Array<ChunkBase, number>;
+    const arrayChunk = chunk as wgsl.Array<wgsl.ChunkBase, number>;
     const elementType = linkChunk(ctx, arrayChunk.elementType);
     return `array<${elementType}, ${arrayChunk.count}>`;
   }
@@ -146,20 +165,27 @@ function linkChunk(ctx: Context, chunk: ChunkBase): string {
   throw new Error(`Unknown kind of shader chunk: ${chunk.kind}`);
 }
 
-export function generateAttribute(ctx: Context, attribute: Attribute): string {
+export function generateAttribute(
+  ctx: Context,
+  attribute: wgsl.Attribute,
+): string {
   if (attribute.params.length === 0) {
     return `@${attribute.name}`;
   }
-  
-  const params = attribute.params.map(paramGroup => {
-    return paramGroup.map(param => {
-      if (typeof param === 'string') {
-        return param;
-      }
-      return linkChunk(ctx, param);
-    }).join(', ');
-  }).join(', ');
-  
+
+  const params = attribute.params
+    .map((paramGroup) => {
+      return paramGroup
+        .map((param) => {
+          if (typeof param === 'string') {
+            return param;
+          }
+          return linkChunk(ctx, param);
+        })
+        .join(', ');
+    })
+    .join(', ');
+
   return `@${attribute.name}(${params})`;
 }
 
