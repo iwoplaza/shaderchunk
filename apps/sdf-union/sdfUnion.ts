@@ -19,6 +19,5 @@ export function sdfUnion(objects: SdfFn[]): SdfFn {
       '  return d;\n',
       '}\n',
     ],
-    attribs: [],
   } as const;
 }

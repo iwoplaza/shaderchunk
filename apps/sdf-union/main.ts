@@ -8,14 +8,13 @@ const sphere = wgslFn([['p', vec3f]], f32)`{
 }`;
 
 // Or writing the function raw
-const plane = {
+const plane: wgsl.Fn<[p: wgsl.Vec3f], wgsl.F32, []> = {
   kind: 'wgsl:fn',
   nameHint: 'plane',
   args: [{ name: 'p', type: 'wgsl:vec3f' }],
   returnType: 'wgsl:f32',
-  body: ['{\n', '  return p.y;\n', '}\n'],
-  attribs: [],
-} as const;
+  body: ['{\n  return p.y;\n}\n'],
+};
 
 // A library can ingest chunks, and emit new chunks
 const scene = sdfUnion([sphere, plane]);

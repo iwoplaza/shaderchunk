@@ -80,7 +80,7 @@ export type Fn<
   args: Readonly<{ [K in keyof TArgs]: { name: string; type: TArgs[K], attribs?: Attribute[] | undefined } }>;
   returnType: TReturn;
   body: readonly (ChunkBase | string)[];
-  attribs: Readonly<TAttribs>;
+  attribs?: Readonly<TAttribs> | undefined;
   '~shaderchunk'?:
     | {
         signature: (...args: TArgs) => TReturn;
