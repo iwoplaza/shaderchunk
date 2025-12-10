@@ -27,6 +27,12 @@ importers:
         specifier: 'workspace:'
         version: link:../../packages/wgsl
 
+  apps/reduce:
+    dependencies:
+      '@shaderchunk/wgsl':
+        specifier: 'workspace:'
+        version: link:../../packages/wgsl
+
   packages/wgsl:
     devDependencies:
       tsdown:

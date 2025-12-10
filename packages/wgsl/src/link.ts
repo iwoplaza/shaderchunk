@@ -16,6 +16,8 @@ export type Context = {
 };
 
 const simpleChunks = {
+  'wgsl:void': 'void',
+
   // Primitive types
   'wgsl:bool': 'bool',
   'wgsl:f16': 'f16',

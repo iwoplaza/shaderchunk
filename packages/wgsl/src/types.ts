@@ -1,5 +1,7 @@
 export type DataType = ChunkBase | `wgsl:${string}`;
 
+export type Void = 'wgsl:void';
+
 export type F32 = 'wgsl:f32';
 export type I32 = 'wgsl:i32';
 export type U32 = 'wgsl:u32';
@@ -45,7 +47,10 @@ export type Struct<
   props: T;
 };
 
-export type Array<TElem extends DataType = DataType, TCount extends number = number> = {
+export type Array<
+  TElem extends DataType = DataType,
+  TCount extends number = number,
+> = {
   kind: 'wgsl:array';
   elem: TElem;
   count: TCount;
@@ -59,6 +64,12 @@ export type WithNameHint = {
   nameHint: string;
 };
 
+export type Expression<T extends DataType = DataType> = {
+  kind: 'wgsl:expr';
+  type: T;
+  value: (ChunkBase | string)[];
+};
+
 export type Fn<
   TArgs extends readonly DataType[] = readonly DataType[],
   TReturn extends DataType = DataType,
@@ -66,8 +77,13 @@ export type Fn<
 > = {
   kind: 'wgsl:fn';
   nameHint: string;
-  args: Readonly<{ [K in keyof TArgs]: { name: string; type: TArgs[K] } }>;
+  args: Readonly<{ [K in keyof TArgs]: { name: string; type: TArgs[K], attribs?: Attribute[] | undefined } }>;
   returnType: TReturn;
   body: readonly (ChunkBase | string)[];
   attribs: Readonly<TAttribs>;
+  '~shaderchunk'?:
+    | {
+        signature: (...args: TArgs) => TReturn;
+      }
+    | undefined;
 };
