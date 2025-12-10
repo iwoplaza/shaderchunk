@@ -1,5 +1,8 @@
 # @shaderchunk/wgsl
 
+![NPM Version](https://img.shields.io/npm/v/%40shaderchunk%2Fwgsl)
+![npm bundle size](https://img.shields.io/bundlephobia/minzip/%40shaderchunk%2Fwgsl?style=flat-square)
+
 A minimal integration layer for type-safe WGSL shader composition.
 
 ## Cost of adoption
