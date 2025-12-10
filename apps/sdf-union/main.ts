@@ -22,3 +22,20 @@ const scene = sdfUnion([sphere, plane]);
 
 const result = wgsl.link({ chunks: [scene] });
 console.log(result.definitions);
+// Will print:
+//
+// fn item(p: vec3f) -> f32 {
+//   return length(p) - 1.0;
+// }
+//
+// fn plane(p: vec3f) -> f32 {
+//   return p.y;
+// }
+//
+// fn sdfUnion(p: vec3f) -> f32 {
+//   var d = f32(1e38);
+//   d = min(d, item(p));
+//   d = min(d, plane(p));
+//   return d;
+// }
+//
