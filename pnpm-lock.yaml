@@ -21,13 +21,13 @@ importers:
         specifier: 'catalog:'
         version: 5.9.3
 
-  apps/lib-test:
+  apps/reduce:
     dependencies:
       '@shaderchunk/wgsl':
         specifier: 'workspace:'
         version: link:../../packages/wgsl
 
-  apps/reduce:
+  apps/sdf-union:
     dependencies:
       '@shaderchunk/wgsl':
         specifier: 'workspace:'
