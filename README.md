@@ -1,5 +1,7 @@
 # shaderchunk
 
+> 🚧 Under development & seeking feedback - not ready for production use 🚧
+
 A minimal integration layer for type-safe shader composition.
 
 ## Cost of adoption
